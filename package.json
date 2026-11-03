@@ -3,5 +3,5 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "node server.mjs", "start": "node server.mjs", "check": "node --check app.js && node --check motion.js && node --check case-gallery.js && node --check reviews.js && node --check language.js && node --check pages.js && node --check startup.js && node --check contact-sign.js && node --check server.mjs" }
+  "scripts": { "dev": "node server.mjs", "start": "node server.mjs", "check": "node --check app.js && node --check motion.js && node --check case-gallery.js && node --check reviews.js && node --check language.js && node --check pages.js && node --check startup.js && node --check contact-sign.js && node --check airflow.js && node --check faq.js && node --check server.mjs" }
 }
