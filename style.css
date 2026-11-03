@@ -80,3 +80,26 @@ dialog{border:0;background:var(--paper);color:var(--ink);padding:65px 40px 40px;
 
 /* The hero stays full viewport size; only the renovation timeline changes. */
 .hero-media{width:100%;height:100%;transform:translate(-50%,-50%);will-change:auto}
+
+/* Transparent company artwork inherits the warmth of each surface. */
+.header{height:112px}
+.header.scrolled{height:96px}
+.header .brand{display:flex;align-items:center;width:154px;height:100px;flex-shrink:0}
+.brand-logo{display:block;width:100%;height:100%;object-fit:contain;transition:filter .3s}
+.header .brand-logo{filter:drop-shadow(0 1px 2px #120d0880)}
+.header.scrolled .brand-logo,.menu-open .header .brand-logo{filter:brightness(.48) sepia(.25) saturate(1.2)}
+.footer-top>.brand{width:240px;height:180px;flex-shrink:0}
+.footer-top{align-items:center}
+@media(max-width:1000px){.header .brand{width:132px}.desktop-nav{gap:20px}}
+@media(max-width:700px){
+ .header{height:96px}.header.scrolled{height:86px}
+ .header .brand{width:123px;height:82px}
+ .hero-topline{top:118px}
+ .header-actions{gap:14px}
+ .footer-top{align-items:start}
+ .footer-top>.brand{width:100%;height:145px}
+ .footer-top>p{padding-top:30px;font-size:15px}
+ .mobile-menu{padding-top:120px}
+}
+.header.scrolled .brand{height:82px}
+@media(max-width:700px){.header .brand{height:76px}.header.scrolled .brand{height:72px}}
