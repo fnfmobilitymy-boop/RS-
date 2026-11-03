@@ -3,7 +3,13 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const clamp = (v, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const opening = $('.opening');
 const heroImage = $('.hero-image');
-const heroPhoto = $('.hero-image>img');
+const heroPhoto = $('.hero-media');
+function syncHeroPlayback(){
+  if(reduced.matches){heroPhoto.pause();return;}
+  heroPhoto.play().catch(()=>{});
+}
+reduced.addEventListener('change',syncHeroPlayback);
+syncHeroPlayback();
 const heroTitle = $('.hero-title');
 const craft = $('.craft');
 let queued = false;
