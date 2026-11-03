@@ -28,8 +28,9 @@ jobs:
       - name: Prepare website
         run: |
           mkdir _site
-          cp index.html style.css app.js _site/
+          cp *.html *.css *.js _site/
           cp -R public _site/public
+          python3 -m zipfile -e .deploy/assets.zip _site/public
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:

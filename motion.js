@@ -1,0 +1,49 @@
+(()=>{
+ const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)],clamp=(n,a=0,b=1)=>Math.max(a,Math.min(b,n)),lerp=(a,b,t)=>a+(b-a)*t;
+ const tx=s=>window.rsTranslate?window.rsTranslate(s):s;
+ const about=q('.ref-about'),states=q('.ref-states'),divisions=q('.ref-divisions'),values=q('.ref-values'),facilities=q('.ref-facilities');
+ const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+ const progress=el=>clamp(-el.getBoundingClientRect().top/Math.max(1,el.offsetHeight-innerHeight));
+ const appear=(el,start=.95,end=.2)=>clamp((innerHeight*start-el.getBoundingClientRect().top)/(innerHeight*(start-end)));
+ let slide=-1,service=-1,manualSlide=null,previousAbout=-1;
+ const slides=qa('.ref-slide');
+ function carousel(index){slide=(index+slides.length)%slides.length;slides.forEach((el,i)=>{const d=(i-slide+slides.length)%slides.length;el.style.transform=`translateX(${d===0?0:d===1?92:-85}%) rotate(${d===0?0:d===1?8:-9}deg) scale(${d===0?1:.88})`;el.style.opacity=d===2?'0':'1';el.style.zIndex=d===0?3:1;el.inert=d!==0;});q('#ref-slide-count').textContent=`0${slide+1} / 03`;}
+ q('#ref-prev').addEventListener('click',()=>{manualSlide=(slide+2)%3;carousel(manualSlide);});q('#ref-next').addEventListener('click',()=>{manualSlide=(slide+1)%3;carousel(manualSlide);});carousel(0);
+ const serviceData=[['RESTORE','家具翻新 / FURNITURE RESTORATION','restoration',[.1,.66,.72]],['REIMAGINE','室内装潢 / INTERIOR DESIGN','interiors',[.95,.53,.13]],['RENEW','全屋焕新 / COMPLETE TRANSFORMATION','bespoke',[.7,.12,.42]]];
+ function setService(index,force=false){if(service===index&&!force)return;service=index;const data=serviceData[index];q('#ref-service-title').textContent=tx(data[0]);q('#ref-service-note').textContent=tx(data[1]);q('#ref-service-index').textContent=`0${index+1} / 03`;q('#ref-service-open').dataset.service=data[2];qa('[data-division]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.division)===index)));}
+ qa('[data-division]').forEach(b=>b.addEventListener('click',()=>{const i=Number(b.dataset.division);if(reduce.matches){setService(i);return;}scrollTo({top:divisions.offsetTop+(divisions.offsetHeight-innerHeight)*((i+.35)/3),behavior:'smooth'});}));
+ qa('[data-need]').forEach(b=>b.addEventListener('click',()=>{const open=!b.classList.contains('is-open');qa('[data-need]').forEach(x=>{x.classList.remove('is-open');x.setAttribute('aria-expanded','false');});b.classList.toggle('is-open',open);b.setAttribute('aria-expanded',String(open));}));
+ const ring=q('.ref-ring-canvas'),gl=ring.getContext('webgl',{alpha:true,antialias:true,powerPreference:'low-power'});let renderRing=()=>{};
+ if(gl){try{
+ const vertex=`attribute vec3 position;attribute vec3 normal;uniform mat3 rotation;uniform mat4 projection;uniform float offset;varying vec3 vNormal;varying vec3 vPosition;void main(){vec3 p=rotation*position;p.y+=offset;vNormal=rotation*normal;vPosition=p;gl_Position=projection*vec4(p+vec3(0.,0.,-4.5),1.);}`;
+ const fragment=`precision mediump float;varying vec3 vNormal;varying vec3 vPosition;uniform vec3 color;void main(){vec3 n=normalize(vNormal);vec3 view=normalize(vec3(0.,0.,4.5)-vPosition);vec3 l=normalize(vec3(-.6,1.,1.3));float diffuse=max(dot(n,l),0.);float spec=pow(max(dot(reflect(-l,n),view),0.),60.);float rim=pow(1.-abs(dot(n,view)),3.);float band=pow(max(0.,sin(n.y*7.+n.x*2.)),12.);vec3 c=color*(.2+.8*diffuse)+vec3(1.,.94,.8)*spec*1.5+color*rim*.6+vec3(.65,.77,.8)*band*.3;gl_FragColor=vec4(c,1.);}`;
+ function shader(type,source){const sh=gl.createShader(type);gl.shaderSource(sh,source);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(sh));return sh;}
+ const program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vertex));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('ring program');gl.useProgram(program);
+ const positions=[],normals=[],indices=[],segments=100,sides=30;
+ for(let i=0;i<=segments;i++){const u=i/segments*Math.PI*2;for(let j=0;j<=sides;j++){const v=j/sides*Math.PI*2,r=1.02+.3*Math.cos(v);positions.push(r*Math.cos(u),r*Math.sin(u),.3*Math.sin(v));normals.push(Math.cos(v)*Math.cos(u),Math.cos(v)*Math.sin(u),Math.sin(v));if(i<segments&&j<sides){const a=i*(sides+1)+j,b=a+sides+1;indices.push(a,b,a+1,b,b+1,a+1);}}}
+ function buffer(name,data){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);const at=gl.getAttribLocation(program,name);gl.enableVertexAttribArray(at);gl.vertexAttribPointer(at,3,gl.FLOAT,false,0,0);}buffer('position',positions);buffer('normal',normals);const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);gl.enable(gl.DEPTH_TEST);
+ const rotation=gl.getUniformLocation(program,'rotation'),projection=gl.getUniformLocation(program,'projection'),color=gl.getUniformLocation(program,'color'),offset=gl.getUniformLocation(program,'offset');
+ renderRing=(p,index)=>{const dpr=Math.min(devicePixelRatio||1,1.5),w=Math.round(ring.clientWidth*dpr),h=Math.round(ring.clientHeight*dpr);if(ring.width!==w||ring.height!==h){ring.width=w;ring.height=h;gl.viewport(0,0,w,h);}const f=1/Math.tan(Math.PI/8),aspect=w/h;gl.uniformMatrix4fv(projection,false,new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,-1.002,-1,0,0,-.2002,0]));const a=.55+Math.sin(p*Math.PI*4)*.22,b=-.45+Math.sin(p*Math.PI*3)*.35,ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b);gl.uniformMatrix3fv(rotation,false,new Float32Array([cb,sa*sb,-ca*sb,0,ca,sa,sb,-sa*cb,ca*cb]));gl.uniform3fv(color,new Float32Array(serviceData[index][3]));const local=p*3-index;gl.uniform1f(offset,Math.sin(local*Math.PI)*.35+(local<.16?(1-local/.16)*-1.8:local>.85?-(local-.85)/.15*2.4:0));gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);};
+ q('.ref-ring-fallback').style.display='none';ring.classList.add('is-ready');
+ }catch{ring.style.display='none';}}
+ const workTitles=['/ LIVING, REIMAGINED.','/ THE ART OF RESTORATION.','/ A PLACE TO GATHER.','/ TEXTURE & DETAIL.','/ A NEW PERSPECTIVE.'];
+ window.drawReferenceMotion=()=>{
+ const mobile=innerWidth<=700,ap=progress(about),sp=progress(states),dp=progress(divisions),vp=progress(values),fp=progress(facilities);
+ const onDark=qa('[data-dark],.opening').some(el=>{const r=el.getBoundingClientRect();return r.top<65&&r.bottom>65;});document.body.classList.toggle('motion-on-dark',onDark);
+ if(reduce.matches){setService(service<0?0:service);return;}
+ const chosen=Math.min(2,Math.floor(ap*3));if(Math.abs(ap-previousAbout)>.008){manualSlide=null;previousAbout=ap;}if((manualSlide??chosen)!==slide)carousel(manualSlide??chosen);
+ q('.ref-who').style.transform=`translateY(${-ap*45}px)`;
+ q('.ref-who>span:first-child').style.transform=`translateX(${(1-clamp(ap/.22))*75}px)`;q('.ref-who>span:last-child').style.transform=`translateX(${-(1-clamp(ap/.22))*65}px)`;
+ q('.ref-material-rail').style.transform=`translateX(${mobile?-appear(q('.ref-materials'))*100:0}px)`;
+ q('.ref-state-heading').style.transform=`translateY(${-clamp(sp/.65)*innerHeight*.52}px)`;q('.ref-state-heading').style.opacity=1-clamp((sp-.35)/.25);q('.ref-line-copy').style.transform=`translateY(${-sp*innerHeight*.37}px)`;qa('.ref-line-copy p>span').forEach((line,i)=>line.style.opacity=lerp(.1,1,clamp((sp-.05-i*.055)/.14)));
+ const index=Math.min(2,Math.floor(dp*3));setService(index);const local=dp*3-index;const phaseFade=Math.min(clamp(local/.12),clamp((1-local)/.1));q('.ref-division-title').style.opacity=dp<.015?clamp(dp/.015):phaseFade;q('.ref-division-title').style.transform=`translateY(${(local<.15?1-local/.15:0)*60}px)`;renderRing(dp,index);
+ const photoFade=1-clamp((vp-.17)/.2);q('.ref-photo-cloud').style.opacity=photoFade;q('.ref-photo-cloud').style.transform=`translateY(${-vp*innerHeight*.7}px)`;qa('.ref-photo-cloud img').forEach((img,i)=>img.style.transform=`translateY(${-vp*i*35}px)`);q('.ref-values-title').style.transform=`translateY(${-vp*innerHeight*.9}px)`;q('.ref-values-title').style.opacity=1-clamp((vp-.18)/.18);
+ const wheelProgress=clamp((vp-.25)/.75)*3;qa('.ref-value-wheel>p').forEach((item,i)=>{const d=i-wheelProgress;item.style.transform=`translateY(${d*innerHeight*.27}px) rotateX(${-d*38}deg) scale(${1-Math.min(.3,Math.abs(d)*.14)})`;item.style.opacity=clamp(1-Math.abs(d)*.65);});
+ const expand=clamp(fp/.35);q('.ref-full-image').style.clipPath=`inset(${(mobile?10:12)*(1-expand)}% ${(mobile?6:8)*(1-expand)}%)`;q('.ref-full-image img').style.transform=`scale(${1.08-.08*expand})`;q('.ref-full-image').style.setProperty('--facility-shade',clamp((fp-.2)/.3)*.58);
+ const facilityTitle=clamp((fp-.32)/.2);q('.ref-facility-title').style.opacity=facilityTitle*(1-clamp((fp-.8)/.2));q('.ref-facility-title').style.transform=`translateY(${-facilityTitle*innerHeight*.46}px)`;const facilityCopy=clamp((fp-.58)/.2);q('.ref-facility-copy').style.opacity=facilityCopy;q('.ref-facility-copy').style.transform=`translateY(${(1-facilityCopy)*60}px)`;
+ qa('.ref-editorial article').forEach((item,i)=>{const a=appear(item);item.style.transform=`translateY(${(1-a)*(i?110:60)}px)`;});
+ qa('.ref-needs>.ref-heading,.ref-journal>.ref-heading').forEach(el=>{const p=appear(el);[...el.children].forEach((row,i)=>{row.style.transform=`translateX(${(1-p)*(i%2?-70:70)}px)`;});});
+ qa('.ref-journal-list>button').forEach(item=>{const a=appear(item,.98,.5);item.style.opacity=.12+.88*a;item.style.transform=`translateY(${(1-a)*90}px)`;});q('.ref-contact .ref-marquee>div').style.transform=`translateX(${-appear(q('.ref-contact'))*innerWidth*.18}px)`;
+ };
+ addEventListener('rs-language-change',()=>{setService(service<0?0:service,true);window.drawReferenceMotion();});setService(0);
+})();

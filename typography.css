@@ -1,0 +1,10 @@
+@font-face{font-family:'Bodoni Moda';src:url('./public/fonts/bodoni-moda-latin-500-normal.woff2') format('woff2');font-style:normal;font-weight:500;font-display:swap}
+@font-face{font-family:'RS Chinese Serif';src:url('./public/fonts/rs-chinese-serif.woff') format('woff');font-style:normal;font-weight:400;font-display:swap;unicode-range:U+2E80-FFFF}
+:root{--display:'Bodoni Moda','RS Chinese Serif','Noto Serif CJK SC','Songti SC',Georgia,serif;--editorial-serif:'Bodoni Moda','RS Chinese Serif','Noto Serif CJK SC','Songti SC',Georgia,serif}
+.hero-copy h1{font-family:var(--editorial-serif)!important;font-weight:500!important;font-size:clamp(72px,9.8vw,156px);letter-spacing:-.06em;line-height:1.08}
+.ref-heading,.ref-division-title h2,.ref-division-brand,.ref-values-title,.ref-value-wheel>p,.ref-marquee>div,.case-showcase-head h2,.reviews-copy h2,.visit-copy h2,.page-intro h1,.page-two-col h2,.page-photo-split h2,.page-cta h2,.service-detail h2{font-family:var(--editorial-serif)!important;font-weight:500!important;letter-spacing:-.045em}
+.ref-heading{line-height:1.05}.lang-zh .ref-heading{font-family:var(--editorial-serif)!important;font-size:clamp(52px,7.6vw,120px);line-height:1.18;letter-spacing:-.05em}
+.lang-zh .hero-copy h1{font-size:clamp(68px,8.7vw,136px);line-height:1.25;letter-spacing:.02em}
+.ref-division-title h2{font-size:clamp(70px,10.4vw,170px)}.ref-division-brand{font-size:clamp(50px,7vw,110px)}.ref-value-wheel>p{line-height:1.2}.ref-marquee>div{line-height:1.16}
+.legal-copy h2,.page-principles h3{font-family:var(--editorial-serif)!important;font-weight:500!important}
+@media(max-width:700px){.hero-copy h1{font-size:13.4vw;line-height:1.15}.lang-zh .hero-copy h1{font-size:16vw;line-height:1.3}.lang-zh .ref-heading{font-size:13vw;line-height:1.2}.ref-division-title h2{font-size:16vw}.ref-division-brand{font-size:12.3vw}.ref-values-title{font-size:13vw}.ref-value-wheel>p{font-size:8vw}.ref-marquee>div{font-size:17vw}.ref-about-copy>p{font-family:Arial,'Microsoft YaHei',sans-serif}.lang-en .hero-copy h1{font-size:13.4vw}}
